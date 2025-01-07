@@ -155,6 +155,7 @@ def main(args):
     neg_image_prompt = Image.open(args.neg_img_prompt) if args.neg_img_prompt else None
 
     for _ in range(args.num_images_per_prompt):
+        print("generating")
         result = xflux_pipeline(
             prompt=args.prompt,
             controlnet_image=image,
