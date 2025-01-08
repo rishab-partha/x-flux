@@ -134,7 +134,8 @@ def main(args, writer):
 
 
     for sample_id in tqdm(range(start_idx, end_idx)):
-        prompt = f'{prompt_dataset[sample_id]['caption1']} in the style of {args.lora_type}'
+        prompt_caption = prompt_dataset[sample_id]["caption1"]
+        prompt = f'{prompt_caption} in the style of {args.lora_type}'
         result = xflux_pipeline(
             prompt=prompt,
             controlnet_image=image,
