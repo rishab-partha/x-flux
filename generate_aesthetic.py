@@ -86,28 +86,34 @@ def create_argparser():
 def main(args, writer):
     image = None
     device_id = f'cuda:{dist.get_local_rank()}' 
-
+    
+    print("loading xflux on rank 0")
     if dist.get_local_rank() == 0:
         xflux_pipeline = XFluxPipeline(args.model_type, device_id)
     dist.barrier()
+    print("loading xflux on non-rank 0")
     if dist.get_local_rank() != 0:
         xflux_pipeline = XFluxPipeline(args.model_type, device_id)
 
 
+    print("loading data on rank 0")
     if dist.get_local_rank() == 0:
         prompt_dataset = load_dataset("sentence-transformers/coco-captions", split = "train")
     dist.barrier()
+    print("loading data on non-rank 0")
     if dist.get_local_rank() != 0:
         prompt_dataset = load_dataset("sentence-transformers/coco-captions", split = "train")
 
     dist.barrier()
 
+    print("loading processor on rank 0")
     if dist.get_local_rank() == 0:
         processor = CLIPProcessor.from_pretrained(args.aesthetic_model_id)
         aesthetic_model = AestheticsPredictorV2Linear.from_pretrained(args.aesthetic_model_id).to(device_id)
     
     dist.barrier()
 
+    print("loading processor on non-rank 0")
     if dist.get_local_rank() != 0:
         processor = CLIPProcessor.from_pretrained(args.aesthetic_model_id)
         aesthetic_model = AestheticsPredictorV2Linear.from_pretrained(args.aesthetic_model_id).to(device_id)
@@ -172,9 +178,13 @@ def main(args, writer):
 
 
 if __name__ == "__main__":
+    print("parsing args")
     args = create_argparser().parse_args()
+    print("getting device")
     device = get_device()
+    print("initializing dist")
     dist.initialize_dist(device, args.dist_timeout)
+    print("making writer")
     writer = MDSWriter(out = f'{remote}/aesthetic-rank{dist.get_global_rank()}', compression = "zstd", columns = columns)
     main(args, writer)
     writer.finish()
