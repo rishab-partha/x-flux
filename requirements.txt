@@ -15,5 +15,5 @@ matplotlib
 onnxruntime
 torchvision
 timm
-aesthetic-predictor
+simple-aesthetic-predictor
 ocifs
