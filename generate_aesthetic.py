@@ -7,7 +7,7 @@ from composer.utils import dist, get_device
 import ocifs
 from datasets import load_dataset
 import pickle
-
+from streaming import MDSWriter
 from aesthetics_predictor import AestheticsPredictorV2Linear
 from transformers import CLIPProcessor
 

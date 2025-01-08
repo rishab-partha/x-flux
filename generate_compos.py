@@ -10,6 +10,7 @@ from transformers import AutoProcessor, AutoModelForCausalLM
 import argparse
 import os
 
+from streaming import MDSWriter
 from composer.utils import dist, get_device
 import ocifs
 from datasets import load_dataset
