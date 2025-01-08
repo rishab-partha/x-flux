@@ -3,22 +3,21 @@ from PIL import Image
 import os
 
 from src.flux.xflux_pipeline import XFluxPipeline
-from composer.utils import dist
+from composer.utils import dist, get_device
 import ocifs
-from dataset import load_dataset, get_device
+from datasets import load_dataset
 import pickle
 
 from aesthetics_predictor import AestheticsPredictorV2Linear
 from transformers import CLIPProcessor
 
 fs = ocifs.OCIFileSystem(config = '/secrets/oci/config')
-remote = "oci://mosaicml-internal-datasets/mosaicml-internal-dataset-multi-image/synthetic-style" 
+remote = "oci://mosaicml-internal-datasets/mosaicml-internal-dataset-multi-image/synthetic-aesthetic" 
 columns = {
     'images': 'bytes',
     'messages': 'json',
 }
 
-lora_styles = ['anime', 'art', 'disney', 'mjv6', 'realism', 'scenery']
 
 def create_argparser():
     parser = argparse.ArgumentParser()
@@ -44,34 +43,20 @@ def create_argparser():
         help="A filename to download from HuggingFace"
     )
     parser.add_argument(
-        "--lora_repo_id", type=str, default=None,
-        help="A HuggingFace repo id to download model (LoRA)"
-    )
-    parser.add_argument(
-        "--lora_type", type=str, default=None,
-        help="A LoRA filename to download from HuggingFace"
-    )
-    parser.add_argument(
-        "--lora_local_path", type=str, default=None,
-        help="Local path to the model checkpoint (Controlnet)"
-    )
-    parser.add_argument(
         "--num_images_per_prompt", type=int, default=1,
         help="The number of images to generate per prompt"
     )
-    parser.add_argument(
-        "--lora_weight", type=float, default=0.9, help="Lora model strength (from 0 to 1.0)"
-    )
+
     parser.add_argument(
         "--model_type", type=str, default="flux-dev",
         choices=("flux-dev", "flux-dev-fp8", "flux-schnell"),
         help="Model type to use (flux-dev, flux-dev-fp8, flux-schnell)"
     )
     parser.add_argument(
-        "--width", type=int, default=1024, help="The width for generated image"
+        "--width", type=int, default=512, help="The width for generated image"
     )
     parser.add_argument(
-        "--height", type=int, default=1024, help="The height for generated image"
+        "--height", type=int, default=512, help="The height for generated image"
     )
     parser.add_argument(
         "--num_steps", type=int, default=25, help="The num_steps for diffusion process"
@@ -106,21 +91,13 @@ def create_argparser():
 def main(args, writer):
     image = None
     device_id = f'cuda:{dist.get_local_rank()}' 
-    assert args.lora_type in lora_styles
-    diff_styles = [style in lora_styles if style != args.lora_type]
-    lora_name = args.lora_type + "_lora.safetensors"
+
     if dist.get_local_rank() == 0:
         xflux_pipeline = XFluxPipeline(args.model_type, device_id)
     dist.barrier()
     if dist.get_local_rank() != 0:
         xflux_pipeline = XFluxPipeline(args.model_type, device_id)
-    print('load lora:', args.lora_local_path, args.lora_repo_id, lora_name)
-    if dist.get_local_rank() == 0:
-        xflux_pipeline.set_lora(args.lora_local_path, args.lora_repo_id, lora_name, args.lora_weight)
-    dist.barrier()
-    if dist.get_local_rank() != 0:
-        xflux_pipeline.set_lora(args.lora_local_path, args.lora_repo_id, lora_name, args.lora_weight)
-    dist.barrier()
+
 
     if dist.get_local_rank() == 0:
         prompt_dataset = load_dataset("sentence-transformers/coco-captions", split = "train")
@@ -153,7 +130,7 @@ def main(args, writer):
 
 
     for sample_id in tqdm(range(start_idx, end_idx)):
-        prompt = f'{prompt_dataset[sample_id]['caption1']} in the style of {args.lora_type}'
+        prompt = f'{prompt_dataset[sample_id]['caption1']}, aesthetic'
         result = xflux_pipeline(
             prompt=prompt,
             controlnet_image=image,
@@ -202,6 +179,6 @@ if __name__ == "__main__":
     args = create_argparser().parse_args()
     device = get_device()
     dist.initialize_dist(device, args.dist_timeout)
-    writer = MDSWriter(out = f'{remote}/{args.lora_type}-rank{dist.get_global_rank()}', compression = "zstd", columns = columns)
+    writer = MDSWriter(out = f'{remote}/aesthetic-rank{dist.get_global_rank()}', compression = "zstd", columns = columns)
     main(args)
     writer.finish()

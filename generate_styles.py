@@ -5,7 +5,7 @@ import os
 from src.flux.xflux_pipeline import XFluxPipeline
 from composer.utils import dist, get_device
 import ocifs
-from dataset import load_dataset
+from datasets import load_dataset
 import pickle
 
 fs = ocifs.OCIFileSystem(config = '/secrets/oci/config')
@@ -65,10 +65,10 @@ def create_argparser():
         help="Model type to use (flux-dev, flux-dev-fp8, flux-schnell)"
     )
     parser.add_argument(
-        "--width", type=int, default=1024, help="The width for generated image"
+        "--width", type=int, default=512, help="The width for generated image"
     )
     parser.add_argument(
-        "--height", type=int, default=1024, help="The height for generated image"
+        "--height", type=int, default=512, help="The height for generated image"
     )
     parser.add_argument(
         "--num_steps", type=int, default=25, help="The num_steps for diffusion process"
