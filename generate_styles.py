@@ -20,11 +20,6 @@ lora_styles = ['anime', 'art', 'disney', 'mjv6', 'realism', 'scenery']
 
 def create_argparser():
     parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--prompt", type=str, required=True,
-        help="The input text prompt"
-    )
     parser.add_argument(
         "--neg_prompt", type=str, default="",
         help="The input text negative prompt"
