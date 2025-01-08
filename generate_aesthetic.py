@@ -176,5 +176,5 @@ if __name__ == "__main__":
     device = get_device()
     dist.initialize_dist(device, args.dist_timeout)
     writer = MDSWriter(out = f'{remote}/aesthetic-rank{dist.get_global_rank()}', compression = "zstd", columns = columns)
-    main(args)
+    main(args, writer)
     writer.finish()
