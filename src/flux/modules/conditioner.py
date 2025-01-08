@@ -9,7 +9,7 @@ class HFEmbedder(nn.Module):
         self.is_clip = version.startswith("openai")
         self.max_length = max_length
         self.output_key = "pooler_output" if self.is_clip else "last_hidden_state"
-
+        print("loading hf embedder")
         if self.is_clip:
             self.tokenizer: CLIPTokenizer = CLIPTokenizer.from_pretrained(version, max_length=max_length)
             self.hf_module: CLIPTextModel = CLIPTextModel.from_pretrained(version, **hf_kwargs)

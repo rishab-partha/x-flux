@@ -35,10 +35,13 @@ class XFluxPipeline:
         self.device = torch.device(device)
         self.offload = offload
         self.model_type = model_type
-
+        print("loading clip")
         self.clip = load_clip(self.device)
+        print("loading t5")
         self.t5 = load_t5(self.device, max_length=512)
+        print("loading ae")
         self.ae = load_ae(model_type, device="cpu" if offload else self.device)
+        print("loading model")
         if "fp8" in model_type:
             self.model = load_flow_model_quintized(model_type, device="cpu" if offload else self.device)
         else:

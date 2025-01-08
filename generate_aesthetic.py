@@ -90,6 +90,7 @@ def main(args, writer):
     print("loading xflux on rank 0")
     if dist.get_local_rank() == 0:
         xflux_pipeline = XFluxPipeline(args.model_type, device_id)
+    print("done downloading")
     dist.barrier()
     print("loading xflux on non-rank 0")
     if dist.get_local_rank() != 0:
