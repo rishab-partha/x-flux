@@ -1,9 +1,8 @@
-mosaicml
 mosaicml-streaming
 accelerate==0.30.1
 deepspeed==0.14.4
 einops==0.8.0
-transformers==4.43.3
+transformers
 huggingface-hub==0.24.5
 optimum-quanto
 datasets
