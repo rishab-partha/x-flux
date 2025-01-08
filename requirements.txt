@@ -8,8 +8,10 @@ datasets
 omegaconf
 diffusers
 sentencepiece
-opencv-python
+opencv-python-headless
 matplotlib
 onnxruntime
 torchvision
 timm
+aesthetic-predictor
+ocifs

@@ -17,7 +17,6 @@ import pickle
 import json
 import cv2
 
-from aesthetics_predictor import AestheticsPredictorV2Linear
 from transformers import CLIPProcessor
 
 fs = ocifs.OCIFileSystem(config = '/secrets/oci/config')
