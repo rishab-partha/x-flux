@@ -42,7 +42,7 @@ def create_argparser():
         help="A HuggingFace repo id to download model (LoRA)"
     )
     parser.add_argument(
-        "--lora_type", type=str, default=None,
+        "--lora_type", type=str, default=None, required=True,
         help="A LoRA filename to download from HuggingFace"
     )
     parser.add_argument(
@@ -86,7 +86,7 @@ def create_argparser():
         "--save_path", type=str, default='results', help="Path to save"
     )
     parser.add_argument(
-        "--num_generations", type=int, default = 50000, help="number of images to generate"
+        "--num_generations", type=int, default = 10000, help="number of images to generate"
     )
     parser.add_argument(
         "--dist_timeout", type=float, default=300.0, help="dist timeout"
@@ -99,22 +99,27 @@ def main(args, writer):
     assert args.lora_type in lora_styles
     diff_styles = [style in lora_styles if style != args.lora_type]
     lora_name = args.lora_type + "_lora.safetensors"
+    print('load xflux on rank 0')
     if dist.get_local_rank() == 0:
         xflux_pipeline = XFluxPipeline(args.model_type, f'cuda:{dist.get_local_rank()}')
     dist.barrier()
+    print('load xflux on non-rank 0')
     if dist.get_local_rank() != 0:
         xflux_pipeline = XFluxPipeline(args.model_type, f'cuda:{dist.get_local_rank()}')
     print('load lora:', args.lora_local_path, args.lora_repo_id, lora_name)
     if dist.get_local_rank() == 0:
         xflux_pipeline.set_lora(args.lora_local_path, args.lora_repo_id, lora_name, args.lora_weight)
     dist.barrier()
+    print('load lora on non-rank 0')
     if dist.get_local_rank() != 0:
         xflux_pipeline.set_lora(args.lora_local_path, args.lora_repo_id, lora_name, args.lora_weight)
     dist.barrier()
 
+    print('load dataset on rank 0')
     if dist.get_local_rank() == 0:
         prompt_dataset = load_dataset("sentence-transformers/coco-captions", split = "train")
     dist.barrier()
+    print('load dataset on non-rank 0')
     if dist.get_local_rank() != 0:
         prompt_dataset = load_dataset("sentence-transformers/coco-captions", split = "train")
 
@@ -132,6 +137,7 @@ def main(args, writer):
     for sample_id in tqdm(range(start_idx, end_idx)):
         prompt_caption = prompt_dataset[sample_id]["caption1"]
         prompt = f'{prompt_caption} in the style of {args.lora_type}'
+        print(prompt)
         result = xflux_pipeline(
             prompt=prompt,
             controlnet_image=image,
@@ -145,7 +151,7 @@ def main(args, writer):
             timestep_to_start_cfg=args.timestep_to_start_cfg,
         )
         output_imgs = pickle.dumps([result.convert("RGB")])
-
+        print(prompt)
 
         messages = []
 
@@ -168,9 +174,14 @@ def main(args, writer):
 
 
 if __name__ == "__main__":
+    print("parse arguments")
     args = create_argparser().parse_args()
+    print('get device')
     device = get_device()
+    # print('i love duyiqing')
+    print('initializing dist')
     dist.initialize_dist(device, args.dist_timeout)
+    print('making writer')
     writer = MDSWriter(out = f'{remote}/{args.lora_type}-rank{dist.get_global_rank()}', compression = "zstd", columns = columns)
     main(args, writer)
     writer.finish()
