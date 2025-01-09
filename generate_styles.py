@@ -161,12 +161,12 @@ def main(args, writer):
 
         if np.random.rand() > 0.5:
             messages.append({'role': 'user', 'content': f'<image>\n Does this image match the style presented in the prompt "{prompt}"?'})
-            messages.append({'role': 'assistant', 'content': f'Yes. This image properly matches the style of {args.lora_style}'})
+            messages.append({'role': 'assistant', 'content': f'Yes. This image properly matches the style of {args.lora_type}'})
         else:
             wrong_style = diff_styles[np.random.randint(len(diff_styles))]
             wrong_prompt = f'{prompt_caption} in the style of {wrong_style}'
             messages.append({'role': 'user', 'content': f'<image>\n Does this image match the style presented in the prompt "{prompt}"?'})
-            messages.append({'role': 'assistant', 'content': f'No. Instead of {wrong_style}, this image has style {args.lora_style}'})
+            messages.append({'role': 'assistant', 'content': f'No. Instead of {wrong_style}, this image has style {args.lora_type}'})
 
         writer.write({'images': output_imgs, 'messages': messages})
 
