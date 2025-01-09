@@ -163,7 +163,7 @@ def main(args, writer):
             messages.append({'role': 'assistant', 'content': f'Yes. This image properly matches the style of {args.lora_style}'})
         else:
             wrong_style = diff_styles[np.random.randint(len(diff_styles))]
-            wrong_prompt = f'{prompt_dataset[sample_id]['caption1']} in the style of {wrong_style}'
+            wrong_prompt = f'{prompt_caption} in the style of {wrong_style}'
             messages.append({'role': 'user', 'content': f'<image>\n Does this image match the style presented in the prompt "{prompt}"?'})
             messages.append({'role': 'assistant', 'content': f'No. Instead of {wrong_style}, this image has style {args.lora_style}'})
 
