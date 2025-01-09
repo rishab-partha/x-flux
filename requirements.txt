@@ -16,3 +16,4 @@ torchvision
 timm
 simple-aesthetics-predictor
 ocifs
+tqdm

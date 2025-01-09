@@ -17,6 +17,7 @@ from datasets import load_dataset
 import pickle
 import json
 import cv2
+from tqdm import tqdm
 
 from transformers import CLIPProcessor
 

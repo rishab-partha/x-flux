@@ -10,7 +10,7 @@ import pickle
 from streaming import MDSWriter
 from aesthetics_predictor import AestheticsPredictorV2Linear
 from transformers import CLIPProcessor
-
+from tqdm import tqdm
 fs = ocifs.OCIFileSystem(config = '/secrets/oci/config')
 remote = "oci://mosaicml-internal-datasets/mosaicml-internal-dataset-multi-image/synthetic-aesthetic" 
 columns = {
@@ -134,6 +134,7 @@ def main(args, writer):
     for sample_id in tqdm(range(start_idx, end_idx)):
         prompt_caption = prompt_dataset[sample_id]["caption1"]
         prompt = f'{prompt_caption}, aesthetic'
+        print(prompt)
         result = xflux_pipeline(
             prompt=prompt,
             controlnet_image=image,
@@ -155,7 +156,7 @@ def main(args, writer):
 
 
 
-
+        print(prompt)
         messages = []
         messages.append({'role': 'user', 'content': f'<image>\n How aesthetically pleasing is the output image generated with the prompt "{prompt}"?'})
         messages.append({'role': 'assistant', 'content': f'I would rate this at a {prediction}'})
