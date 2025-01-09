@@ -9,6 +9,7 @@ from datasets import load_dataset
 import pickle
 from streaming import MDSWriter
 from tqdm import tqdm
+import numpy as np
 
 fs = ocifs.OCIFileSystem(config = '/secrets/oci/config')
 remote = "oci://mosaicml-internal-datasets/mosaicml-internal-dataset-multi-image/synthetic-style" 
