@@ -97,7 +97,10 @@ def create_argparser():
 def main(args, writer):
     image = None
     assert args.lora_type in lora_styles
-    diff_styles = [style in lora_styles if style != args.lora_type]
+    diff_styles = []
+    for style in lora_styles:
+        if style != args.lora_type:
+            diff_styles.append(style)
     lora_name = args.lora_type + "_lora.safetensors"
     print('load xflux on rank 0')
     if dist.get_local_rank() == 0:
