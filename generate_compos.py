@@ -185,13 +185,13 @@ def main(args, writer):
         prompt = f'{compos_name1} {correct_compos_dir} of {compos_name2}'
         wrong_prompt = f'{compos_name1} {wrong_compos_dir} of {compos_name2}'
 
-        if correct_compos_dir = 'left':
+        if correct_compos_dir == 'left':
             canny_image_final[args.height//4: args.height//4 + edges1.shape[0], :edges1.shape[1]] = edges1
             canny_image_final[args.height//4: args.height//4 + edges2.shape[0], -edges2.shape[1]:] = edges2
-        elif correct_compos_dir = 'right':
+        elif correct_compos_dir == 'right':
             canny_image_final[args.height//4: args.height//4 + edges1.shape[0], -edges1.shape[1]:] = edges1
             canny_image_final[args.height//4: args.height//4 + edges2.shape[0], :edges2.shape[1]] = edges2
-        elif correct_compos_dir = 'below':
+        elif correct_compos_dir == 'below':
             canny_image_final[-edges1.shape[0]:, args.width//4: args.width//4 + edges1.shape[1]] = edges1
             canny_image_final[:edges2.shape[0], args.width//4: args.width//4 + edges2.shape[1]] = edges2
         else:
