@@ -163,11 +163,15 @@ def main(args, writer):
         if compos_jpegname1 not in images or compos_jpegname2 not in images:
             continue
 
+        
         with fs.open(compos_jpegname1) as f:
-            image1 = Image.open(io.BytesIO(f.read())).convert("RGB").thumbnail((args.width//2, args.height//2), Image.Resampling.LANCZOS)
+            image1 = Image.open(io.BytesIO(f.read())).convert("RGB")
+            image1.thumbnail((args.width//2, args.height//2), Image.Resampling.LANCZOS)
+
 
         with fs.open(compos_jpegname2) as f:
-            image2 = Image.open(io.BytesIO(f.read())).convert("RGB").thumbnail((args.width//2, args.height//2), Image.Resampling.LANCZOS)
+            image2 = Image.open(io.BytesIO(f.read())).convert("RGB")
+            image2.thumbnail((args.width//2, args.height//2), Image.Resampling.LANCZOS)
 
         
         opencv_image1 = cv2.cvtColor(np.array(image1, dtype = np.uint8), cv2.COLOR_RGB2GRAY)
