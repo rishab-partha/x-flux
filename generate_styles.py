@@ -38,7 +38,7 @@ def create_argparser():
         help="A filename to download from HuggingFace"
     )
     parser.add_argument(
-        "--lora_repo_id", type=str, default=None,
+        "--lora_repo_id", type=str, default='XLabs-AI/flux-lora-collection',
         help="A HuggingFace repo id to download model (LoRA)"
     )
     parser.add_argument(
