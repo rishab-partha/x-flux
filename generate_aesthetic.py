@@ -11,6 +11,7 @@ from streaming import MDSWriter
 from aesthetics_predictor import AestheticsPredictorV2Linear
 from transformers import CLIPProcessor
 from tqdm import tqdm
+import torch
 fs = ocifs.OCIFileSystem(config = '/secrets/oci/config')
 remote = "oci://mosaicml-internal-datasets/mosaicml-internal-dataset-multi-image/synthetic-aesthetic" 
 columns = {
