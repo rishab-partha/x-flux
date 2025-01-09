@@ -50,7 +50,7 @@ def run_example(model, processor, device_id, image_ref, task_prompt, text_input=
     parsed_answer = processor.post_process_generation(
         generated_text, 
         task=task_prompt, 
-        image_size=(image.width, image.height)
+        image_size=(image_ref.width, image_ref.height)
     )
     return parsed_answer
 
