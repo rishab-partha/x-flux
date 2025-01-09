@@ -120,13 +120,13 @@ def main(args, writer):
 
     print('loading florence on rank 0')
     if dist.get_local_rank() == 0:
-        florence_processor = AutoProcessor.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True).to(device_id)
+        florence_processor = AutoProcessor.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True)
         florence_model = AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True, torch_dtype='auto').eval().to(device_id)
     print('finish loading florence on rank 0')
     dist.barrier()
     print('loading florence on non-rank 0')
     if dist.get_local_rank() != 0:
-        florence_processor = AutoProcessor.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True).to(device_id)
+        florence_processor = AutoProcessor.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True)
         florence_model = AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True, torch_dtype='auto').eval().to(device_id)
     print('finish loading florence on non-rank 0')
     dist.barrier() 
