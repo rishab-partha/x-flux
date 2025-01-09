@@ -87,40 +87,51 @@ def create_argparser():
 
 def main(args, writer):
     device_id = f'cuda:{dist.get_local_rank()}'
+    print('loading controlnet on rank 0')
     if dist.get_local_rank() == 0:
         controlnet = FluxControlNetModel.from_pretrained(
             "Xlabs-AI/flux-controlnet-canny-diffusers",
             torch_dtype=torch.bfloat16,
             use_safetensors=True,
         )
+        print('loading pipe on rank 0')
         pipe = FluxControlNetPipeline.from_pretrained(
             "black-forest-labs/FLUX.1-dev",
             controlnet=controlnet,
             torch_dtype=torch.bfloat16
         ).to(device_id)
+    print('finished downloading')
     dist.barrier()
+    print('loading controlnet on non-rank 0')
     if dist.get_local_rank() != 0:
         controlnet = FluxControlNetModel.from_pretrained(
             "Xlabs-AI/flux-controlnet-canny-diffusers",
             torch_dtype=torch.bfloat16,
             use_safetensors=True,
         )
+        print('loading pipe on non-rank 0')
         pipe = FluxControlNetPipeline.from_pretrained(
             "black-forest-labs/FLUX.1-dev",
             controlnet=controlnet,
             torch_dtype=torch.bfloat16
         ).to(device_id)
+    print('finish downloading on non-rank 0')
     dist.barrier()
 
+    print('loading florence on rank 0')
     if dist.get_local_rank() == 0:
         florence_processor = AutoProcessor.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True).to(device_id)
         florence_model = AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True, torch_dtype='auto').eval().to(device_id)
+    print('finish loading florence on rank 0')
     dist.barrier()
+    print('loading florence on non-rank 0')
     if dist.get_local_rank() != 0:
         florence_processor = AutoProcessor.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True).to(device_id)
         florence_model = AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True, torch_dtype='auto').eval().to(device_id)
+    print('finish loading florence on non-rank 0')
     dist.barrier() 
 
+    print('get all spins')
     all_spins = []
     with fs.open(base_dir + "/all_spins.json", 'rb') as jsonfile:
         for line in jsonfile:
@@ -133,12 +144,13 @@ def main(args, writer):
     if dist.get_global_rank() < remainder:
         end_idx += 1
 
+    print('index all images')
     images = fs.glob(f'{base_dir}/original/*.jpg')
 
     for _ in tqdm(range(start_idx, end_idx)):
         # control_image = load_image("https://huggingface.co/Xlabs-AI/flux-controlnet-canny-diffusers/resolve/main/canny_example.png")
         # prompt = "handsome girl with rainbow hair, anime"
-
+        
         compos_images_indices = np.random.choice(len(all_spins), 2, replace = False)
         compos_json1 = all_spins[compos_images_indices[0]]
         compos_json2 = all_spins[compos_images_indices[1]]
@@ -189,7 +201,7 @@ def main(args, writer):
         control_image = Image.fromarray(cv2.cvtColor(canny_image_final, cv2.COLOR_GRAY2RGB))
 
 
-        
+        print(prompt)
 
         #prompt = f'{prompt_dataset[sample_id]['caption1']} in the style of {args.lora_type}'
         image = pipe(
@@ -202,6 +214,7 @@ def main(args, writer):
             width=args.width,
             num_images_per_prompt=1,
         ).images[0]
+        print(wrong_prompt)
 
         output_imgs = pickle.dumps([image.convert("RGB")])
 
@@ -209,6 +222,7 @@ def main(args, writer):
         rating = run_example(florence_model, device_id, image, '<OPEN_VOCABULARY_DETECTION>', text_input=f'{compos_name1}, {compos_name2}')
         labels = rating['<OPEN_VOCABULARY_DETECTION>'].get('bboxes_labels', [])
         if len(labels) == 0:
+            print("rejected")
             continue
 
         messages = []
@@ -230,9 +244,14 @@ def main(args, writer):
 
 
 if __name__ == "__main__":
+    print("parse arguments")
     args = create_argparser().parse_args()
+    print('get device')
     device = get_device()
+    # print('i love duyiqing')
+    print('initializing dist')
     dist.initialize_dist(device, args.dist_timeout)
+    print('making writer')
     writer = MDSWriter(out = f'{remote}/compos-rank{dist.get_global_rank()}', compression = "zstd", columns = columns)
     main(args, writer)
     writer.finish()
