@@ -170,8 +170,8 @@ def main(args, writer):
             image2 = Image.open(io.BytesIO(f.read())).convert("RGB").thumbnail((args.width//2, args.height//2), Image.Resampling.LANCZOS)
 
         
-        opencv_image1 = cv2.cvtColor(np.array(image1), cv2.COLOR_RGB2GRAY)
-        opencv_image2 = cv2.cvtColor(np.array(image2), cv2.COLOR_RGB2GRAY)
+        opencv_image1 = cv2.cvtColor(np.array(image1, dtype = np.uint8), cv2.COLOR_RGB2GRAY)
+        opencv_image2 = cv2.cvtColor(np.array(image2, dtype = np.uint8), cv2.COLOR_RGB2GRAY)
 
         edges1 = cv2.Canny(opencv_image1, 50, 200)
         edges2 = cv2.Canny(opencv_image2, 50, 200)
