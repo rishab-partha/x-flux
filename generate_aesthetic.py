@@ -153,7 +153,7 @@ def main(args, writer):
         aesthetic_inputs = {k: v.to(device_id) for k, v in processor(images=result.convert("RGB"), return_tensors="pt").items()}
 
         with torch.no_grad():
-            prediction = aesthetic_model(**aesthetic_inputs).logits
+            prediction = aesthetic_model(**aesthetic_inputs).logits.item()
 
 
 
