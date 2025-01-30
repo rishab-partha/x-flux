@@ -10,9 +10,10 @@ import pickle
 from streaming import MDSWriter
 from tqdm import tqdm
 import numpy as np
+from streaming.base.util import merge_index
 
 fs = ocifs.OCIFileSystem(config = '/secrets/oci/config')
-remote = "oci://mosaicml-internal-datasets/mosaicml-internal-dataset-multi-image/synthetic-style" 
+remote = "oci://mosaicml-internal-datasets/mosaicml-internal-dataset-multi-image/synthetic-style-val" 
 columns = {
     'images': 'bytes',
     'messages': 'json',
@@ -189,3 +190,4 @@ if __name__ == "__main__":
     writer = MDSWriter(out = f'{remote}/{args.lora_type}-rank{dist.get_global_rank()}', compression = "zstd", columns = columns)
     main(args, writer)
     writer.finish()
+    dist.barrier()
