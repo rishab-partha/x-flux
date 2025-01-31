@@ -22,7 +22,7 @@ from tqdm import tqdm
 from transformers import CLIPProcessor
 
 fs = ocifs.OCIFileSystem(config = '/secrets/oci/config')
-remote = "oci://mosaicml-internal-datasets/mosaicml-internal-dataset-multi-image/synthetic-compo" 
+remote = "oci://mosaicml-internal-datasets/mosaicml-internal-dataset-multi-image/synthetic-compo-val" 
 columns = {
     'images': 'bytes',
     'messages': 'json',
@@ -82,6 +82,10 @@ def create_argparser():
     )
     parser.add_argument(
         "--dist_timeout", type=float, default=300.0, help="dist timeout"
+    )
+    
+    parser.add_argument(
+        "--sample_offset", type=int, default=0
     )
     return parser
 

@@ -13,7 +13,7 @@ from transformers import CLIPProcessor
 from tqdm import tqdm
 import torch
 fs = ocifs.OCIFileSystem(config = '/secrets/oci/config')
-remote = "oci://mosaicml-internal-datasets/mosaicml-internal-dataset-multi-image/synthetic-aesthetic" 
+remote = "oci://mosaicml-internal-datasets/mosaicml-internal-dataset-multi-image/synthetic-aesthetic-val" 
 columns = {
     'images': 'bytes',
     'messages': 'json',
@@ -81,6 +81,9 @@ def create_argparser():
     parser.add_argument(
         "--dist_timeout", type=float, default=300.0, help="dist timeout"
     )
+    parser.add_argument(
+        "--sample_offset", type=int, default=0
+    )
     return parser
 
 
@@ -133,7 +136,7 @@ def main(args, writer):
 
 
     for sample_id in tqdm(range(start_idx, end_idx)):
-        prompt_caption = prompt_dataset[sample_id]["caption1"]
+        prompt_caption = prompt_dataset[sample_id + args.sample_offset]["caption1"]
         prompt = f'{prompt_caption}, aesthetic'
         print(prompt)
         result = xflux_pipeline(
