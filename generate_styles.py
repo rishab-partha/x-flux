@@ -13,7 +13,7 @@ import numpy as np
 from streaming.base.util import merge_index
 
 fs = ocifs.OCIFileSystem(config = '/secrets/oci/config')
-remote = "oci://mosaicml-internal-datasets/mosaicml-internal-dataset-multi-image/synthetic-style-val" 
+remote = "oci://mosaicml-internal-datasets/mosaicml-internal-dataset-multi-image/" 
 columns = {
     'images': 'bytes',
     'messages': 'json',
@@ -96,6 +96,9 @@ def create_argparser():
     parser.add_argument(
         "--sample_offset", type=int, default=0
     )
+    parser.add_argument(
+        "--dataset_path", type=str, default="synthetic-style"
+    )
     return parser
 
 
@@ -169,7 +172,7 @@ def main(args, writer):
         else:
             wrong_style = diff_styles[np.random.randint(len(diff_styles))]
             wrong_prompt = f'{prompt_caption} in the style of {wrong_style}'
-            messages.append({'role': 'user', 'content': f'<image>\n Does this image match the style presented in the prompt "{prompt}"?'})
+            messages.append({'role': 'user', 'content': f'<image>\n Does this image match the style presented in the prompt "{wrong_prompt}"?'})
             messages.append({'role': 'assistant', 'content': f'No. Instead of {wrong_style}, this image has style {args.lora_type}'})
 
         writer.write({'images': output_imgs, 'messages': messages})
@@ -190,7 +193,7 @@ if __name__ == "__main__":
     print('initializing dist')
     dist.initialize_dist(device, args.dist_timeout)
     print('making writer')
-    writer = MDSWriter(out = f'{remote}/{args.lora_type}-rank{dist.get_global_rank()}', compression = "zstd", columns = columns)
+    writer = MDSWriter(out = f'{remote}{args.dataset_path}/{args.lora_type}-rank{dist.get_global_rank()}', compression = "zstd", columns = columns)
     main(args, writer)
     writer.finish()
     dist.barrier()
